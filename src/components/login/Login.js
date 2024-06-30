@@ -1,50 +1,36 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import './css/Login.css';
 import { useNavigate } from 'react-router-dom';
 import config from '../../configs/config.json';
 import { AuthContext } from './AuthContext';
+import axios from 'axios';
 
-function Login() {
-  const [username, setUsername] = useState('');
+const Login = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { authState, login } = useContext(AuthContext);
-
-  useEffect(() => {
-    if (authState.isAuthenticated && authState.isOtpVerified) {
-      navigate('/dashboard');
-    } else if (authState.isAuthenticated) {
-      navigate('/otp');
-    }
-  }, [authState, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    navigate('/otp');
-    // try {
-    //   const response = await fetch(`${config.apiHost}/api/AdminApplicationUser/Login`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ userName: username, password: password }),
-    //   });
+    try {
+      const response = await axios.post(`${config.apiHost}/api/AdminApplicationUser/Login`, {
+        Email: email,
+        Password: password,
+      });
 
-    //   const data = await response.json();
-
-    //   if (response.ok) {
-    //     login(username, data.jwtToken);
-    //     navigate('/otp');
-    //   } else {
-    //     setError(data.message || 'Login failed');
-    //   }
-    // } catch (error) {
-    //   setError('An error occurred. Please try again later.');
-    // }
+      if (response.data.IsSuccess) {
+        const userInfo = response.data;
+        login(email, userInfo);
+        navigate('/otp');
+      } else {
+        setError(response.data.Message || 'Login failed');
+      }
+    } catch (error) {
+      setError('An error occurred during login. Please try again.');
+    }
   };
-  
 
   return (
     <div className="login-page">
@@ -52,24 +38,24 @@ function Login() {
         <form className="login-form" onSubmit={handleLogin}>
           <input
             type="text"
-            placeholder="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
-            placeholder="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button type="submit">login</button>
+          <button type="submit">Login</button>
           {error && <p className="error">{error}</p>}
         </form>
       </div>
     </div>
   );
-}
+};
 
 export default Login;

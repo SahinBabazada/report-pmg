@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { useTable, usePagination, useFlexLayout } from 'react-table';
 import './TableComponent.css';
 import config from '../../configs/config.json';
+import { AuthContext } from '../login/AuthContext';
 
 const CustomPagination = ({ pageCount, pageIndex, gotoPage, previousPage, nextPage, canPreviousPage, canNextPage }) => {
   const generatePageNumbers = () => {
@@ -78,11 +79,13 @@ const CustomPagination = ({ pageCount, pageIndex, gotoPage, previousPage, nextPa
   );
 };
 
-const TableComponent = ({ endpoint, columns, dateRange, pageIndex, setPageIndex, selectedColumns, setColumns }) => {
+const TableComponent = ({ endpoint, columns, dateRange, selectedColumns, setSelectedColumns }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { authState } = useContext(AuthContext);
+
 
   const fetchData = useCallback(async ({ pageIndex, pageSize }) => {
     setLoading(true);
@@ -90,21 +93,27 @@ const TableComponent = ({ endpoint, columns, dateRange, pageIndex, setPageIndex,
       const params = {
         Page: pageIndex + 1, // API expects one-based index
         'ShowMore.Take': pageSize,
-        CompanyName: "Bravo",
+        UserCompanyName: authState.companyName,
         StartPeriod: dateRange.startDate.toISOString().split('T')[0],
         EndPeriod: dateRange.endDate.toISOString().split('T')[0],
+        RoleId: parseInt(authState.roleId),
       };
+
+      
 
       const url = new URL(endpoint, config.apiHost);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
       const response = await axios.get(url.toString(), {
         headers: {
-          'ngrok-skip-browser-warning': 'any-value'
+          'ngrok-skip-browser-warning': 'any-value',
+          'Authorization': `Bearer ${authState.jwtToken}`,
         }
       });
 
       const data = response.data;
+
+      console.log(data);
 
       let fetchedData = [];
       let totalItemCount = 0;
@@ -130,24 +139,22 @@ const TableComponent = ({ endpoint, columns, dateRange, pageIndex, setPageIndex,
   }, [endpoint, dateRange]);
 
   const handleColumnToggle = accessor => {
-    setColumns(prev =>
+    setSelectedColumns(prev =>
       prev.includes(accessor) ? prev.filter(col => col !== accessor) : [...prev, accessor]
     );
   };
 
   const handleSelectAll = () => {
     if (selectedColumns.length === columns.length) {
-      setColumns([]);
+      setSelectedColumns([]);
     } else {
-      setColumns(columns.map(column => column.accessor));
+      setSelectedColumns(columns.map(column => column.accessor));
     }
   };
 
   const filteredColumns = useMemo(() => {
     return columns.filter(column => selectedColumns.includes(column.accessor));
   }, [columns, selectedColumns]);
-
-  const headersRef = useRef([]);
 
   const {
     getTableProps,
@@ -180,9 +187,10 @@ const TableComponent = ({ endpoint, columns, dateRange, pageIndex, setPageIndex,
   }, [state.pageIndex, state.pageSize, dateRange, fetchData]);
 
   useEffect(() => {
-    setPageIndex(0);
-    setColumns(columns.map(column => column.accessor));
-  }, [columns, setPageIndex, setColumns]);
+    if (state.pageIndex !== 0) {
+      gotoPage(0);
+    }
+  }, [state.pageIndex, gotoPage]);
 
   return (
     <div className="table-component">
@@ -225,7 +233,7 @@ const TableComponent = ({ endpoint, columns, dateRange, pageIndex, setPageIndex,
                     {headerGroup.headers.map((column, index) => {
                       const { key, ...rest } = column.getHeaderProps();
                       return (
-                        <th key={key || index} {...rest} ref={el => (headersRef.current[index] = el)}>
+                        <th key={key || index} {...rest}>
                           {column.render('Header')}
                           <div className="resizer" />
                         </th>
