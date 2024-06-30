@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Header from '../header/Header';
 import Sidebar from '../sidebar/Sidebar';
 import DateRangePickerComponent from '../dateRangePicker/DateRangePickerComponent';
 import ImportExcel from '../importExcelModal/importExcelModal';
 import BulkDeleteModal from '../bulkDelete/BulkDeleteModal';
 import TableComponent from '../table/TableComponent';
-import Users from '../users/Users'; // Import the Users component
-import UserInformation from '../userInformation/UserInformation'; // Import the UserInformation component
+import Users from '../users/Users';
+import { SidebarContext, SidebarProvider } from '../sidebar/SidebarContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const [selectedMenuItem, setSelectedMenuItem] = useState('salary-table');
+  const { selectedMenuItem, setSelectedMenuItem } = useContext(SidebarContext);
   const [dateRange, setDateRange] = useState({
     startDate: new Date(),
     endDate: new Date()
@@ -18,18 +18,13 @@ const Dashboard = () => {
   const [selectedColumns, setSelectedColumns] = useState([]);
 
   useEffect(() => {
-    // Reset columns when menu item changes
     const columns = getTableProps()?.columns || [];
     setSelectedColumns(columns.map(column => column.accessor));
   }, [selectedMenuItem]);
 
-  const handleUploadSuccess = () => {
-    // Implement any data refresh logic needed after adding new data
-  };
+  const handleUploadSuccess = () => {};
 
-  const handleDeleteSuccess = () => {
-    // Implement any data refresh logic needed after deleting data
-  };
+  const handleDeleteSuccess = () => {};
 
   const getTableProps = () => {
     switch (selectedMenuItem) {
@@ -101,9 +96,7 @@ const Dashboard = () => {
         const tableProps = getTableProps();
         return tableProps ? <TableComponent dateRange={dateRange} {...tableProps} selectedColumns={selectedColumns} setSelectedColumns={setSelectedColumns} /> : <div>Select a menu item to view content</div>;
       case 'users':
-        return <Users />; // Render the Users component for 'users' menu item
-      case 'user-information':
-        return <UserInformation />; // Render the UserInformation component for 'user-information' menu item
+        return <Users />;
       default:
         return <div>Select a menu item to view content</div>;
     }
@@ -119,7 +112,7 @@ const Dashboard = () => {
           <Sidebar onSelectMenuItem={setSelectedMenuItem} />
         </div>
         <div className="dashboard-content">
-          {selectedMenuItem !== 'users' && selectedMenuItem !== 'user-information' && (
+          {selectedMenuItem !== 'users' && (
             <div className="dashboard-top-bar">
               <DateRangePickerComponent onChange={setDateRange} />
               <div className="dashboard-button-group">
@@ -135,4 +128,10 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+const DashboardWithProvider = () => (
+  <SidebarProvider>
+    <Dashboard />
+  </SidebarProvider>
+);
+
+export default DashboardWithProvider;

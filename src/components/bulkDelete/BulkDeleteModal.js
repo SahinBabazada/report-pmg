@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import './BulkDeleteModal.css'; // Updated CSS file
+import './css/BulkDeleteModal.css'; // Updated CSS file
 import config from '../../configs/config.json';
+import { SidebarContext } from '../sidebar/SidebarContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const BulkDeleteModal = ({ onDeleteSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const { selectedMenuItem } = useContext(SidebarContext);
+
+  const apiEndpoints = {
+    'salary-table': `${config.apiHost}/api/Salary/DeleteByDateRange`,
+    'recruitment': `${config.apiHost}/api/Recruitment/DeleteByDateRange`,
+    'vacation': `${config.apiHost}/api/Vacation/DeleteByDateRange`,
+    'learning-and-development': `${config.apiHost}/api/LearningAndDevelopment/DeleteByDateRange`,
+    'disciplinary': `${config.apiHost}/api/Disciplinary/DeleteByDateRange`,
+    'hr-performance-ratio': `${config.apiHost}/api/HRPerformanceRatio/DeleteByDateRange`,
+    'hipo': `${config.apiHost}/api/HiPo/DeleteByDateRange`
+  };
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -17,7 +31,7 @@ const BulkDeleteModal = ({ onDeleteSuccess }) => {
     e.preventDefault();
     setDeleting(true);
     try {
-      const response = await axios.delete(`${config.apiHost}/api/Salary/DeleteByDateRange`, {
+      const response = await axios.delete(apiEndpoints[selectedMenuItem], {
         params: {
           StartPeriod: startDate,
           EndPeriod: endDate
@@ -27,14 +41,14 @@ const BulkDeleteModal = ({ onDeleteSuccess }) => {
           'ngrok-skip-browser-warning': 'any-value'
         }
       });
-      alert(`${response.data} salaries deleted successfully.`);
+      toast.success(`${response.data} items deleted successfully.`);
       setStartDate('');
       setEndDate('');
       onDeleteSuccess(); // Notify parent component to refresh data
       toggleModal(); // Close modal
     } catch (error) {
       console.error('Error deleting data', error);
-      alert('Error deleting data');
+      toast.error(`${error.response.data}`);
     } finally {
       setDeleting(false);
     }
@@ -47,7 +61,7 @@ const BulkDeleteModal = ({ onDeleteSuccess }) => {
         <div className="bulk-delete-overlay" onClick={toggleModal}>
           <div className="bulk-delete-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bulk-delete-modal-header">
-              <h2 className="bulk-delete-modal-title">Delete Salaries by Date Range</h2>
+              <h2 className="bulk-delete-modal-title">Delete Items by Date Range</h2>
               <button className="bulk-delete-btn-close" onClick={toggleModal}>&times;</button>
             </div>
             <form onSubmit={handleDelete} className="bulk-delete-modal-body">
@@ -81,6 +95,7 @@ const BulkDeleteModal = ({ onDeleteSuccess }) => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

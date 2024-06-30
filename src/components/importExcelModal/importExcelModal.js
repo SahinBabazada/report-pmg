@@ -1,13 +1,26 @@
-// src/components/ModalComponent.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import config from '../../configs/config.json';
-import './importExcelModal.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './css/importExcelModal.css';
+import { SidebarContext } from '../sidebar/SidebarContext';
 
 const ImportExcel = ({ onUploadSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const { selectedMenuItem } = useContext(SidebarContext);
+
+  const apiEndpoints = {
+    'salary-table': `${config.apiHost}/api/Salary/importexceldata`,
+    'recruitment': `${config.apiHost}/api/Recruitment/importexceldata`,
+    'vacation': `${config.apiHost}/api/Vacation/importexceldata`,
+    'learning-and-development': `${config.apiHost}/api/LearningAndDevelopment/importexceldata`,
+    'disciplinary': `${config.apiHost}/api/Disciplinary/importexceldata`,
+    'hr-performance-ratio': `${config.apiHost}/api/HRPerformanceRatio/importexceldata`,
+    'hipo': `${config.apiHost}/api/HiPo/importexceldata`
+  };
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -19,26 +32,29 @@ const ImportExcel = ({ onUploadSuccess }) => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      toast.warn('Please select a file to upload');
+      return;
+    }
 
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${config.apiHost}/api/Salary/importexceldata`, formData, {
+      const response = await axios.post(apiEndpoints[selectedMenuItem], formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'ngrok-skip-browser-warning': 'any-value'
         }
       });
-      alert('File uploaded successfully');
+      toast.success('File uploaded successfully');
       setFile(null);
       onUploadSuccess(); // Notify parent component to refresh data
       toggleModal(); // Close modal
     } catch (error) {
       console.error('Error uploading file', error);
-      alert('Error uploading file');
+      toast.error('Error uploading file');
     } finally {
       setUploading(false);
     }
@@ -71,6 +87,7 @@ const ImportExcel = ({ onUploadSuccess }) => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

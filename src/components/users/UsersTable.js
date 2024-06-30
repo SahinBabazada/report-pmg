@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './css/UsersTable.css';
+import config from '../../configs/config.json';
 
 const UsersTable = ({ onEditUser }) => {
   const [users, setUsers] = useState([]);
@@ -13,7 +14,7 @@ const UsersTable = ({ onEditUser }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://c844-5-191-107-49.ngrok-free.app/api/AdminApplicationUser`,
+        `${config.apiHost}/api/AdminApplicationUser`,
         {
           params: {
             Page: pageIndex + 1,
@@ -38,7 +39,7 @@ const UsersTable = ({ onEditUser }) => {
   const handleDeleteUser = async (userId) => {
     try {
       await axios.delete(
-        `https://c844-5-191-107-49.ngrok-free.app/api/AdminApplicationUser/${userId}`,
+        `${config.apiHost}/api/AdminApplicationUser/${userId}`,
         
         {
           headers: {

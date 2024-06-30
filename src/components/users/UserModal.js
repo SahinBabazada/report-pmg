@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './css/UserModal.css';
+import config from '../../configs/config.json';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserModal = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
@@ -8,6 +11,7 @@ const UserModal = ({ user, onClose }) => {
     UserName: '',
     FullName: '',
     Email: '',
+    PhoneNumber: '',
     Password: '',
     RoleId: 1
   });
@@ -19,7 +23,8 @@ const UserModal = ({ user, onClose }) => {
         UserName: user.UserName,
         FullName: user.FullName,
         Email: user.Email,
-        Password: user.Password,
+        PhoneNumber: user.PhoneNumber,
+        Password: '',
         RoleId: user.RoleId
       });
     }
@@ -32,16 +37,42 @@ const UserModal = ({ user, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if all required fields are filled
+    if (!formData.CompanyName || !formData.UserName || !formData.FullName || !formData.Email || !formData.PhoneNumber || !formData.Password || !formData.RoleId) {
+      toast.warn('All fields are required');
+      return;
+    }
+
     try {
-      if (user) {
-        // Edit user
-        await axios.put(`https://c844-5-191-107-49.ngrok-free.app/api/AdminApplicationUser/${user.Id}`, formData);
+      const url = user
+        ? `${config.apiHost}/api/AdminApplicationUser`
+        : `${config.apiHost}/api/AdminApplicationUser/CreateUser`;
+      const method = user ? 'put' : 'post';
+      const payload = {
+        ...formData,
+        PhoneNumber: formData.PhoneNumber.replace(/\D/g, '') // remove non-numeric characters
+      };
+
+      const response = await axios({
+        method,
+        url,
+        params: payload,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': '*/*',
+          'ngrok-skip-browser-warning': 'any-value'
+        }
+      });
+
+      if (response.data.IsSuccess) {
+        toast.success(`User ${user ? 'updated' : 'created'} successfully`);
+        onClose();
       } else {
-        // Create new user
-        await axios.post(`https://c844-5-191-107-49.ngrok-free.app/api/AdminApplicationUser/CreateUser`, formData);
+        toast.error(response.data.Message || 'Error occurred');
       }
-      onClose();
     } catch (error) {
+      toast.error('Failed to save user');
       console.error('Failed to save user:', error);
     }
   };
@@ -68,6 +99,10 @@ const UserModal = ({ user, onClose }) => {
             <input type="email" name="Email" value={formData.Email} onChange={handleChange} />
           </label>
           <label>
+            Phone Number:
+            <input type="text" name="PhoneNumber" value={formData.PhoneNumber} onChange={handleChange} required />
+          </label>
+          <label>
             Password:
             <input type="password" name="Password" value={formData.Password} onChange={handleChange} required />
           </label>
@@ -81,6 +116,7 @@ const UserModal = ({ user, onClose }) => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };

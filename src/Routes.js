@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthContext } from './components/login/AuthContext';
+
 import Dashboard from './components/main/Dashboard';
 import Login from './components/login/Login';
 import Otp from './components/login/Otp';
@@ -11,24 +12,16 @@ const PrivateRoute = ({ element }) => {
   return authState.isAuthenticated && authState.isOtpVerified ? element : <Navigate to="/" />;
 };
 
-const AuthenticatedRoute = ({ element }) => {
-  const { authState } = useContext(AuthContext);
-  if (authState.isAuthenticated && authState.isOtpVerified) {
-    return <Navigate to="/dashboard" />;
-  } else if (authState.isAuthenticated && !authState.isOtpVerified) {
-    return <Navigate to="/otp" />;
-  }
-  return element;
-};
-
 const AppRoutes = () => {
+  const { authState } = useContext(AuthContext);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AuthenticatedRoute element={<Login />} />} />
-        <Route path="/otp" element={<AuthenticatedRoute element={<Otp />} />} />
+        <Route path="/" element={authState.isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/otp" element={<Otp />} />
         <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
-        <Route path="/user-information" element={<PrivateRoute element={<UserInformation />} />} />
+        <Route path="/user-information" element={<UserInformation />} />
       </Routes>
     </Router>
   );

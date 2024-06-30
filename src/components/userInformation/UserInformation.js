@@ -1,123 +1,202 @@
-import React, { useContext, useState } from 'react';
-import './UserInformation.css';
-import { AuthContext } from '../login/AuthContext';
+import React, { useState, useContext } from 'react';
 import Modal from 'react-modal';
+import axios from 'axios';
+import { AuthContext } from '../login/AuthContext';
+import Header from '../header/Header';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './css/UserInformation.css';
+import config from '../../configs/config.json';
 
 const UserInformation = () => {
   const { authState } = useContext(AuthContext);
-  const [isEditing, setIsEditing] = useState(false);
-  const [userInfo, setUserInfo] = useState({ ...authState });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [user, setUser] = useState({
+    Id: authState.userId,
+    CompanyName: authState.companyName,
+    FullName: authState.fullName,
+    UserName: authState.username,
+    Email: authState.email,
+    PhoneNumber: authState.phoneNumber,
+    Password: '',
+    RoleIds: [authState.roleId]
+  });
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setError('');
+    setUser((prevUser) => ({ ...prevUser, Password: '' }));
+    setConfirmPassword('');
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 9) {
+      setUser((prevUser) => ({
+        ...prevUser,
+        PhoneNumber: value
+      }));
+    }
   };
 
   const handleChange = (e) => {
-    setUserInfo({
-      ...userInfo,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: value
+    }));
   };
 
-  const handleSave = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Save the changes (send to server or update context state)
-    setIsEditing(false);
+    if (user.Password !== confirmPassword) {
+      setError('Passwords do not match');
+      toast.error('Passwords do not match');
+      return;
+    }
+    try {
+      const response = await axios.put(`${config.apiHost}/api/AdminApplicationUser`, {
+        ...user,
+        PhoneNumber: `+994${user.PhoneNumber}`,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': '*/*'
+        }
+      });
+      if (response.status === 200) {
+        toast.success('User updated successfully');
+        handleCloseModal();
+      }
+    } catch (error) {
+      toast.error(error.response?.data || 'Error updating user');
+      console.error('Error updating user:', error);
+    }
   };
 
   return (
-    <div className="user-info-container">
-      <h2>User Information</h2>
-      <div className="user-info-details">
-        <div className="user-info-detail">
-          <label>Full Name:</label>
-          <span>{authState.fullName}</span>
+    <div className="user-info-page">
+      <Header />
+      <div className="user-info-main">
+        <div className="user-info-content">
+          <div className="user-info-container">
+            <h2>User Information</h2>
+            <div className="user-info-details">
+              <div className="user-info-detail">
+                <label>Full Name:</label>
+                <span>{user.FullName}</span>
+              </div>
+              <div className="user-info-detail">
+                <label>Email:</label>
+                <span>{user.Email}</span>
+              </div>
+              <div className="user-info-detail">
+                <label>Phone Number:</label>
+                <span>{`+994 ${user.PhoneNumber}`}</span>
+              </div>
+              <div className="user-info-detail">
+                <label>Company Name:</label>
+                <span>{user.CompanyName}</span>
+              </div>
+              <div className="user-info-detail">
+                <label>Role:</label>
+                <span>{user.RoleIds.join(', ')}</span>
+              </div>
+            </div>
+            <button className="btn btn-edit" onClick={handleOpenModal}>
+              Edit
+            </button>
+          </div>
+          <Modal
+            isOpen={isModalOpen}
+            onRequestClose={handleCloseModal}
+            contentLabel="Edit User Information"
+            className="user-info-modal"
+            overlayClassName="user-info-modal-overlay"
+          >
+            <h2>Edit User Information</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  name="FullName"
+                  value={user.FullName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Phone Number</label>
+                <div className="phone-input-container">
+                  <span className="phone-prefix">+994</span>
+                  <input
+                    type="text"
+                    name="PhoneNumber"
+                    value={user.PhoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    maxLength="9"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <div className="password-input">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="Password"
+                    value={user.Password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Confirm Password</label>
+                <div className="password-input">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="ConfirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+              {error && <p className="error">{error}</p>}
+              <div className="form-buttons">
+                <button type="submit" className="btn btn-save">
+                  Save
+                </button>
+                <button type="button" className="btn btn-cancel" onClick={handleCloseModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </Modal>
         </div>
-        <div className="user-info-detail">
-          <label>Email:</label>
-          <span>{authState.email}</span>
-        </div>
-        <div className="user-info-detail">
-          <label>Phone Number:</label>
-          <span>{authState.phoneNumber}</span>
-        </div>
-        <div className="user-info-detail">
-          <label>Company Name:</label>
-          <span>{authState.companyName}</span>
-        </div>
-        <div className="user-info-detail">
-          <label>Role:</label>
-          <span>{authState.roleId}</span>
-        </div>
-        <button className="btn btn-edit" onClick={handleEdit}>Edit</button>
       </div>
-
-      {isEditing && (
-        <Modal
-          isOpen={isEditing}
-          onRequestClose={() => setIsEditing(false)}
-          className="user-info-modal"
-          overlayClassName="user-info-modal-overlay"
-        >
-          <h2>Edit User Information</h2>
-          <form onSubmit={handleSave}>
-            <div className="form-group">
-              <label>Full Name:</label>
-              <input
-                type="text"
-                name="fullName"
-                value={userInfo.fullName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={userInfo.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Phone Number:</label>
-              <input
-                type="text"
-                name="phoneNumber"
-                value={userInfo.phoneNumber}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Company Name:</label>
-              <input
-                type="text"
-                name="companyName"
-                value={userInfo.companyName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Role:</label>
-              <input
-                type="number"
-                name="roleId"
-                value={userInfo.roleId}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-buttons">
-              <button className="btn btn-save" type="submit">Save</button>
-              <button className="btn btn-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
-            </div>
-          </form>
-        </Modal>
-      )}
+      <ToastContainer />
     </div>
   );
 };

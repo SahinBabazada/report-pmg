@@ -30,10 +30,10 @@ const AuthProvider = ({ children }) => {
     const email = Cookies.get('email');
     const roleId = Cookies.get('roleId');
 
-    if (token && refreshToken && username) {
+    if (token && refreshToken && username && isOtpVerified) {
       setAuthState({
         isAuthenticated: true,
-        isOtpVerified,
+        isOtpVerified: true,
         username,
         jwtToken: token,
         refreshToken,
@@ -45,7 +45,7 @@ const AuthProvider = ({ children }) => {
         roleId,
       });
     }
-  }, []);
+  }, []); // Empty dependency array to run this effect only once on mount
 
   const login = (username, userInfo) => {
     Cookies.set('username', username, { expires: 7 });
