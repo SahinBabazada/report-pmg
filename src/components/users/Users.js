@@ -137,7 +137,8 @@ const Users = () => {
       Email: formData.get('Email'),
       PhoneNumber: formData.get('PhoneNumber'),
       Password: formData.get('Password'),
-      RoleIds: [Number(formData.get('RoleId'))]
+      RoleIds: [Number(formData.get('RoleId'))],
+      RoleId:  Number(formData.get('RoleId'))
     };
 
     try {
@@ -149,14 +150,24 @@ const Users = () => {
             headers: {
               'ngrok-skip-browser-warning': 'any-value',
               'Authorization': `Bearer ${authState.jwtToken}`,
+              'Content-Type': 'application/json',
             }
           }
         );
       } else {
         await axios.post(
           `${config.apiHost}/api/AdminApplicationUser/CreateUser`,
-          data,
+          '',
           {
+            params: {
+              'CompanyName': data.CompanyName,
+              'FullName': data.FullName,
+              'UserName': data.UserName,
+              'Email': data.Email,
+              'PhoneNumber': data.PhoneNumber,
+              'Password': data.Password,
+              'RoleId': data.RoleId
+            },
             headers: {
               'ngrok-skip-browser-warning': 'any-value',
               'Authorization': `Bearer ${authState.jwtToken}`,

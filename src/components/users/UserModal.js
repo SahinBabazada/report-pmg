@@ -57,7 +57,7 @@ const UserModal = ({ user, onClose }) => {
       const response = await axios({
         method,
         url,
-        params: payload,
+        data: payload,
         headers: {
           'Content-Type': 'application/json',
           'accept': '*/*',

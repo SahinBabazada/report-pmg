@@ -57,11 +57,22 @@ const Dashboard = () => {
         return {
           endpoint: '/api/Recruitment',
           columns: [
-            { Header: 'Candidate Name', accessor: 'CandidateName' },
+            { Header: 'Company Name', accessor: 'CompanyName' },
+            { Header: 'Period', accessor: 'Period', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Vacancy Opening Date', accessor: 'VacancyOpeningDate', Cell: ({ value }) => new Date(value).toLocaleDateString() },
             { Header: 'Position', accessor: 'Position' },
-            { Header: 'Application Date', accessor: 'ApplicationDate', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Position Group', accessor: 'PositionGroup' },
+            { Header: 'Division', accessor: 'Division' },
+            { Header: 'Department', accessor: 'Department' },
+            { Header: 'Functional Area', accessor: 'FunctionalArea' },
+            { Header: 'Source', accessor: 'Source' },
+            { Header: 'External Detail', accessor: 'ExternalDetail' },
             { Header: 'Status', accessor: 'Status' },
-            { Header: 'Interviewer', accessor: 'Interviewer' }
+            { Header: 'Closed Date', accessor: 'ClosedDate', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Hiring Date', accessor: 'HiringDate', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Received CV Count', accessor: 'ReceivedCVCount' },
+            { Header: 'Interview Count', accessor: 'InterviewCount' },
+            { Header: 'CxO', accessor: 'CxO' }
           ]
         };
       case 'hr-performance-ratio':
@@ -83,6 +94,52 @@ const Dashboard = () => {
             { Header: 'Total Cost of Benefit', accessor: 'TotalCostOfBenefit' }
           ]
         };
+      case 'vacation':
+        return {
+          endpoint: '/api/Vacation',
+          columns: [
+            { Header: 'Company Name', accessor: 'CompanyName' },
+            { Header: 'Period', accessor: 'Period', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Unused Vacation Day Balance', accessor: 'UnusedVacationDayBalance' },
+            { Header: 'Cost Of Unused Vacation', accessor: 'CostOfUnusedVacation' },
+            { Header: 'Head Count', accessor: 'HeadCount' }
+          ]
+        };
+      case 'ld':
+        return {
+          endpoint: '/api/LearningAndDevelopment',
+          columns: [
+            { Header: 'Period', accessor: 'Period', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Internal Training Hours', accessor: 'InternalTrainingHours' },
+            { Header: 'External Training Hours', accessor: 'ExternalTrainingHours' },
+            { Header: 'Hard Skills Manhour', accessor: 'HardSkillsManhour' },
+            { Header: 'Soft Skills Manhour', accessor: 'SoftSkillsManhour' },
+            { Header: 'Cost Of Trainings', accessor: 'CostOfTrainings' },
+            { Header: 'Company Name', accessor: 'CompanyName' }
+          ]
+        };
+      case 'disciplinary':
+        return {
+          endpoint: '/api/Disciplinary',
+          columns: [
+            { Header: 'Company Name', accessor: 'CompanyName' },
+            { Header: 'Period', accessor: 'Period', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'Disciplinary Actions', accessor: 'DisciplinaryActions' },
+            { Header: 'Count', accessor: 'Count' }
+          ]
+        };
+      case 'hipo':
+        return {
+          endpoint: '/api/HiPo',
+          columns: [
+            { Header: 'Company Name', accessor: 'CompanyName' },
+            { Header: 'Period', accessor: 'Period', Cell: ({ value }) => new Date(value).toLocaleDateString() },
+            { Header: 'HiPo Count', accessor: 'HiPoCount' },
+            { Header: 'Critical Roles Count', accessor: 'CriticalRolesCount' },
+            { Header: 'Roles With Successors Count', accessor: 'RolesWithSuccessorsCount' },
+            { Header: 'Ready Successor Roles Count', accessor: 'ReadySuccessorRolesCount' }
+          ]
+        };
       default:
         return null;
     }
@@ -93,6 +150,10 @@ const Dashboard = () => {
       case 'salary-table':
       case 'recruitment':
       case 'hr-performance-ratio':
+      case 'vacation':
+      case 'ld':
+      case 'disciplinary':
+      case 'hipo':
         const tableProps = getTableProps();
         return tableProps ? <TableComponent dateRange={dateRange} {...tableProps} selectedColumns={selectedColumns} setSelectedColumns={setSelectedColumns} /> : <div>Select a menu item to view content</div>;
       case 'users':

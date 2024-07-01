@@ -1,7 +1,7 @@
 // src/components/Sidebar.js
 import React, { useState } from 'react';
 import './Sidebar.css';
-import pmgLogo from '../../assets/logo.svg'
+import pmgLogo from '../../assets/logo.jfif'
 
 const Sidebar = ({ onSelectMenuItem }) => {
   const [activeItem, setActiveItem] = useState('salary-table');

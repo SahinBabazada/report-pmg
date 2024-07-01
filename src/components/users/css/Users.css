@@ -3,7 +3,7 @@
 }
 
 .user-btn-create {
-  background-color: #4CAF50;
+  background-color: #2c3e50;
   color: white;
   padding: 10px 20px;
   margin-bottom: 20px;
@@ -14,7 +14,7 @@
 }
 
 .user-btn-create:hover {
-  background-color: #45a049;
+  background-color: #4c6074;
 }
 
 .user-table {
@@ -35,7 +35,7 @@
 }
 
 .user-btn-edit, .user-btn-delete {
-  background-color: #4CAF50;
+  background-color: #2c3e50;
   color: white;
   padding: 5px 10px;
   margin: 5px;
@@ -46,7 +46,7 @@
 }
 
 .user-btn-edit:hover, .user-btn-delete:hover {
-  background-color: #45a049;
+  background-color: #415e7b;
 }
 
 .pagination {
@@ -107,7 +107,7 @@ form input {
 }
 
 .user-btn-save {
-  background-color: #4CAF50;
+  background-color: #2c3e50;
   color: white;
   padding: 10px 20px;
   margin-top: 10px;
@@ -117,5 +117,5 @@ form input {
 }
 
 .user-btn-save:hover {
-  background-color: #45a049;
+  background-color: #466380;
 }

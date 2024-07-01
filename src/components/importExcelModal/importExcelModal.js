@@ -16,10 +16,20 @@ const ImportExcel = ({ onUploadSuccess }) => {
     'salary-table': `${config.apiHost}/api/Salary/importexceldata`,
     'recruitment': `${config.apiHost}/api/Recruitment/importexceldata`,
     'vacation': `${config.apiHost}/api/Vacation/importexceldata`,
-    'learning-and-development': `${config.apiHost}/api/LearningAndDevelopment/importexceldata`,
+    'ld': `${config.apiHost}/api/LearningAndDevelopment/importexceldata`,
     'disciplinary': `${config.apiHost}/api/Disciplinary/importexceldata`,
     'hr-performance-ratio': `${config.apiHost}/api/HRPerformanceRatio/importexceldata`,
     'hipo': `${config.apiHost}/api/HiPo/importexceldata`
+  };
+
+  const templateFiles = {
+    'salary-table': '/templates/SalaryTemplate.xlsx',
+    'recruitment': '/templates/RecruitmentTemplate.xlsx',
+    'vacation': '/templates/VacationTemplate.xlsx',
+    'ld': '/templates/LearningAndDevelopmentTemplate.xlsx',
+    'disciplinary': '/templates/DisciplinaryTemplate.xlsx',
+    'hr-performance-ratio': '/templates/HRPerformanceRatioTemplate.xlsx',
+    'hipo': '/templates/HiPoTemplate.xlsx'
   };
 
   const toggleModal = () => {
@@ -70,20 +80,24 @@ const ImportExcel = ({ onUploadSuccess }) => {
               <h2 className="modal-title">Upload Excel File</h2>
               <button className="btn-close" onClick={toggleModal}>&times;</button>
             </div>
-            <form onSubmit={handleUpload} className="modal-body">
-              <div className="upload-area" onClick={() => document.getElementById('fileInput').click()}>
-                <input type="file" id="fileInput" onChange={handleFileChange} style={{ display: 'none' }} />
-                <span className="upload-area-icon">📁</span>
-                <span className="upload-area-title">Drag & drop file here or click to browse</span>
-                {file && <span className="upload-area-description">{file.name}</span>}
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={toggleModal}>Cancel</button>
-                <button type="submit" disabled={uploading} className="btn-primary">
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-            </form>
+            <div className="modal-body">
+              <a href={templateFiles[selectedMenuItem]} download className="template-download-link">Download Excel Template</a>
+             
+              <form onSubmit={handleUpload}>
+                <div className="upload-area" onClick={() => document.getElementById('fileInput').click()}>
+                  <input type="file" id="fileInput" onChange={handleFileChange} style={{ display: 'none' }} />
+                  <span className="upload-area-icon">📁</span>
+                  <span className="upload-area-title">Drag & drop file here or click to browse</span>
+                  {file && <span className="upload-area-description">{file.name}</span>}
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn-secondary" onClick={toggleModal}>Cancel</button>
+                  <button type="submit" disabled={uploading} className="btn-primary">
+                    {uploading ? 'Uploading...' : 'Upload'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
